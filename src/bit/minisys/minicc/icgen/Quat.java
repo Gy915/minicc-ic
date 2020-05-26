@@ -8,11 +8,13 @@ public class Quat {
 	private ASTNode res;
 	private ASTNode opnd1;
 	private ASTNode opnd2;
-	public Quat(String op, ASTNode res, ASTNode opnd1, ASTNode opnd2) {
+	private Integer order_id;
+	public Quat(String op, ASTNode res, ASTNode opnd1, ASTNode opnd2, Integer order_id) {
 		this.op = op;
 		this.res = res;
 		this.opnd1 = opnd1;
 		this.opnd2 = opnd2;
+		this.order_id = order_id;
 		
 	}
 	

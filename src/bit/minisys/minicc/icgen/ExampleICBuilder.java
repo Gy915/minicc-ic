@@ -12,10 +12,29 @@ public class ExampleICBuilder implements ASTVisitor{
 	private Map<ASTNode, ASTNode> map;				// 使用map存储子节点的返回值，key对应子节点，value对应返回值，value目前类别包括ASTIdentifier,ASTIntegerConstant,TemportaryValue...
 	private List<Quat> quats;						// 生成的四元式列表
 	private Integer tmpId;							// 临时变量编号
+	private Order_Table order_table;
+	private Integer order_id;
+	private Integer cond_num;
+
+	public String Cond_name(boolean flag){
+		String name ="Cond" + Integer.toString(cond_num);
+		if(flag){
+			name = name + "true";
+		}
+		else{
+			name = name + "false";
+		}
+
+		return name;
+
+	}
 	public ExampleICBuilder() {
 		map = new HashMap<ASTNode, ASTNode>();
 		quats = new LinkedList<Quat>();
 		tmpId = 0;
+		order_table = new Order_Table();
+		order_id = 0;
+		cond_num = 0;
 	}
 	public List<Quat> getQuats() {
 		return quats;
@@ -100,12 +119,17 @@ public class ExampleICBuilder implements ASTVisitor{
 			opnd1 = map.get(binaryExpression.expr1);
 			visit(binaryExpression.expr2);
 			opnd2 = map.get(binaryExpression.expr2);
-		}else {
-			// else..
+		}else if (op.equals("-")){
+			res = new TemporaryValue(++tmpId);
+			visit(binaryExpression.expr1);
+			opnd1 = map.get(binaryExpression.expr1);
+			visit(binaryExpression.expr2);
+			opnd2 = map.get(binaryExpression.expr2);
 		}
 		
 		// build quat
-		Quat quat = new Quat(op, res, opnd1, opnd2);
+		Quat quat = new Quat(op, res, opnd1, opnd2, order_id++);
+
 		quats.add(quat);
 		map.put(binaryExpression, res);
 	}
@@ -149,6 +173,12 @@ public class ExampleICBuilder implements ASTVisitor{
 	@Override
 	public void visit(ASTConditionExpression conditionExpression) throws Exception {
 		// TODO Auto-generated method stub
+		
+
+
+
+
+
 		
 	}
 
