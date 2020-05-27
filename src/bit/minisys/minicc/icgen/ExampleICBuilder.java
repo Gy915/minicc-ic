@@ -225,10 +225,6 @@ public class ExampleICBuilder implements ASTVisitor{
 	@Override
 	public void visit(ASTFunctionCall funcCall) throws Exception {
 		// TODO Auto-generated method stub
-
-
-
-
 		//param
 		int i = 0;
 		for(ASTExpression e:funcCall.argList){
@@ -238,16 +234,21 @@ public class ExampleICBuilder implements ASTVisitor{
 			ASTNode opnd2 = null;
 			visit(e);
 			opnd1 = map.get(e);
-
+			Quat q = new Quat(op, res, opnd1, opnd2, order_id++);
+			quats.add(q);
 		}
-
 		//call
-		
+		String op ="call";
+		ASTNode res = funcCall.funcname;
+		Quat q = new Quat(op, res, null, null, order_id++);
+		quats.add(q);
 
 		//retrieve
-
-
-
+		op = "retrieve";
+		res = new TemporaryValue(tmpId++);
+		q = new Quat(op, res, null, null, order_id++);
+		quats.add(q);
+		map.put(funcCall, res);
 	}
 
 	@Override
@@ -281,7 +282,44 @@ public class ExampleICBuilder implements ASTVisitor{
 	@Override
 	public void visit(ASTIterationStatement iterationStat) throws Exception {
 		// TODO Auto-generated method stub
-		
+		//init
+		int init_pos = 0;
+		for(ASTExpression e : iterationStat.init){
+			visit(e);
+		}
+		init_pos = order_id;
+		//cond
+		String true_name= Cond_name(true);
+		order_table.add_unsure(true_name, order_id);
+		LabelValue lvT = new LabelValue(true_name);
+		Quat qT = new Quat("JT", lvT, null, null, order_id++ );
+		quats.add(qT);
+
+		String false_name = Cond_name(false);
+		order_table.add_unsure(false_name, order_id);
+		LabelValue lvF = new LabelValue(false_name);
+		Quat qF = new Quat("JF", lvF, null, null, order_id++ );
+		quats.add(qF);
+
+		int true_label = order_id;
+		order_table.Back_fill(true_name, true_label);
+
+		//stat
+		ASTCompoundStatement csT = (ASTCompoundStatement)iterationStat.stat;
+		visit(csT);
+
+		//step
+		for(ASTExpression e: iterationStat.step){
+			visit(e);
+		}
+
+		LabelValue jmp = new LabelValue(String.valueOf(init_pos));
+		Quat q  = new Quat("JMP", jmp, null, null, order_id++);
+		quats.add(q);
+
+		int false_label = order_id;
+		order_table.Back_fill(false_name, false_label);
+
 	}
 
 	@Override

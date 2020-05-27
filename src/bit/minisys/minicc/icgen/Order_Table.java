@@ -18,6 +18,13 @@ public class Order_Table {
         e.name = name;
         entries.add(e);
     }
+    public void add_sure(String name, int add){
+        Entry e = new Entry();
+        e.add = add;
+        e.D = 1;
+        e.name = name;
+        entries.add(e);
+    }
 
     // 给出回填项的名以及地址，将其D改为1，其地址改为add
     public void Back_fill(String name, int add){

@@ -45,6 +45,9 @@ public class ExampleICPrinter {
 		}else if(node instanceof LabelValue){
 			return((LabelValue)node).name();
 		}
+		else if(node instanceof ParamValue){
+			return ((ParamValue)node).name();
+		}
 		else {
 			return "";
 		}
