@@ -1,5 +1,6 @@
 package bit.minisys.minicc.icgen;
 import java.util.LinkedList;
+import java.util.List;
 
 class Entry{
     String name;
@@ -15,6 +16,7 @@ public class Order_Table {
         e.add = add;
         e.D = 0;
         e.name = name;
+        entries.add(e);
     }
 
     // 给出回填项的名以及地址，将其D改为1，其地址改为add

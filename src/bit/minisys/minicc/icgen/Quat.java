@@ -4,7 +4,7 @@ import bit.minisys.minicc.parser.ast.ASTNode;
 
 // 四元式形式的中间代码, 操作数和返回值的结构直接使用AST节点，也可以自定义IR节点
 public class Quat {
-	private String op;	
+	private String op;
 	private ASTNode res;
 	private ASTNode opnd1;
 	private ASTNode opnd2;
@@ -29,5 +29,8 @@ public class Quat {
 	}
 	public ASTNode getRes() {
 		return res;
+	}
+	public void setres(ASTNode n){
+		this.res = n;
 	}
 }

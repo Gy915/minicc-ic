@@ -42,7 +42,10 @@ public class ExampleICPrinter {
 			return ((ASTIntegerConstant)node).value+"";
 		}else if (node instanceof TemporaryValue) {
 			return ((TemporaryValue)node).name();
-		}else {
+		}else if(node instanceof LabelValue){
+			return((LabelValue)node).name();
+		}
+		else {
 			return "";
 		}
 	}

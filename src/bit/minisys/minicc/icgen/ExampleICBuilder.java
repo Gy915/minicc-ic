@@ -10,11 +10,11 @@ import bit.minisys.minicc.parser.ast.*;
 public class ExampleICBuilder implements ASTVisitor{
 
 	private Map<ASTNode, ASTNode> map;				// 使用map存储子节点的返回值，key对应子节点，value对应返回值，value目前类别包括ASTIdentifier,ASTIntegerConstant,TemportaryValue...
-	private List<Quat> quats;						// 生成的四元式列表
+	public List<Quat> quats;						// 生成的四元式列表
 	private Integer tmpId;							// 临时变量编号
-	private Order_Table order_table;
-	private Integer order_id;
-	private Integer cond_num;
+	public Order_Table order_table;
+	public Integer order_id;
+	public Integer cond_num;
 
 	public String Cond_name(boolean flag){
 		String name ="Cond" + Integer.toString(cond_num);
@@ -112,14 +112,8 @@ public class ExampleICBuilder implements ASTVisitor{
 				// else ...
 			}
 			
-		}else if (op.equals("+")) {
+		}else if (op.equals("+")||op.equals("-")||op.equals(">")||op.equals("<")) {
 			// 加法操作，结果存储到中间变量
-			res = new TemporaryValue(++tmpId);
-			visit(binaryExpression.expr1);
-			opnd1 = map.get(binaryExpression.expr1);
-			visit(binaryExpression.expr2);
-			opnd2 = map.get(binaryExpression.expr2);
-		}else if (op.equals("-")){
 			res = new TemporaryValue(++tmpId);
 			visit(binaryExpression.expr1);
 			opnd1 = map.get(binaryExpression.expr1);
@@ -225,13 +219,35 @@ public class ExampleICBuilder implements ASTVisitor{
 	@Override
 	public void visit(ASTFloatConstant floatConst) throws Exception {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void visit(ASTFunctionCall funcCall) throws Exception {
 		// TODO Auto-generated method stub
+
+
+
+
+		//param
+		int i = 0;
+		for(ASTExpression e:funcCall.argList){
+			String op = "param";
+			ASTNode res = new ParamValue(i++);
+			ASTNode opnd1 = null;
+			ASTNode opnd2 = null;
+			visit(e);
+			opnd1 = map.get(e);
+
+		}
+
+		//call
 		
+
+		//retrieve
+
+
+
 	}
 
 	@Override
@@ -295,6 +311,32 @@ public class ExampleICBuilder implements ASTVisitor{
 	@Override
 	public void visit(ASTSelectionStatement selectionStat) throws Exception {
 		// TODO Auto-generated method stub
+		for(ASTExpression e: selectionStat.cond){
+			visit((ASTExpression)e);
+		}
+		String true_name = Cond_name(true);
+		order_table.add_unsure(true_name, order_id);
+		LabelValue lvT = new LabelValue(true_name);
+		Quat qT = new Quat("JT", lvT, null, null, order_id++ );
+		quats.add(qT);
+
+		String false_name = Cond_name(false);
+		order_table.add_unsure(false_name, order_id);
+		LabelValue lvF = new LabelValue(false_name);
+		Quat qF = new Quat("JF", lvF, null, null, order_id++ );
+		quats.add(qF);
+
+		//visit true
+		int true_label = order_id;
+		order_table.Back_fill(true_name, true_label);
+		ASTCompoundStatement csT = (ASTCompoundStatement)selectionStat.then;
+		visit(csT);
+
+		int false_label = order_id;
+		order_table.Back_fill(false_name, false_label);
+		ASTCompoundStatement csF = (ASTCompoundStatement)selectionStat.otherwise;
+		visit(csF);
+
 		
 	}
 
@@ -363,5 +405,4 @@ public class ExampleICBuilder implements ASTVisitor{
 		// TODO Auto-generated method stub
 		
 	}
-
 }

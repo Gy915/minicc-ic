@@ -1,7 +1,9 @@
+int f(int a, int b){
+    return a + b;
+}
+
 int main(){
     int a, b, c;
-    c = a < b;
-    c = a + b;
-    c = a - b;
+    a = f(b, c) + 1;
 
 }
