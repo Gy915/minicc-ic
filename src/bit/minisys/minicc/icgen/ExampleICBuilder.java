@@ -17,7 +17,7 @@ public class ExampleICBuilder implements ASTVisitor{
 	public Integer cond_num;
 
 	public String Cond_name(boolean flag){
-		String name ="Cond" + Integer.toString(cond_num);
+		String name ="Cond" + Integer.toString(cond_num++);
 		if(flag){
 			name = name + "true";
 		}
@@ -245,7 +245,7 @@ public class ExampleICBuilder implements ASTVisitor{
 
 		//retrieve
 		op = "retrieve";
-		res = new TemporaryValue(tmpId++);
+		res = new TemporaryValue(++tmpId);
 		q = new Quat(op, res, null, null, order_id++);
 		quats.add(q);
 		map.put(funcCall, res);
@@ -283,12 +283,19 @@ public class ExampleICBuilder implements ASTVisitor{
 	public void visit(ASTIterationStatement iterationStat) throws Exception {
 		// TODO Auto-generated method stub
 		//init
-		int init_pos = 0;
+
 		for(ASTExpression e : iterationStat.init){
 			visit(e);
 		}
-		init_pos = order_id;
+
 		//cond
+		int cond_pos = 0;
+		cond_pos = order_id;
+		for(ASTExpression e: iterationStat.cond){
+			visit(e);
+		}
+		order_table.add_sure(String.valueOf(order_id), order_id);
+
 		String true_name= Cond_name(true);
 		order_table.add_unsure(true_name, order_id);
 		LabelValue lvT = new LabelValue(true_name);
@@ -301,10 +308,10 @@ public class ExampleICBuilder implements ASTVisitor{
 		Quat qF = new Quat("JF", lvF, null, null, order_id++ );
 		quats.add(qF);
 
-		int true_label = order_id;
-		order_table.Back_fill(true_name, true_label);
 
 		//stat
+		int true_label = order_id;
+		order_table.Back_fill(true_name, true_label);
 		ASTCompoundStatement csT = (ASTCompoundStatement)iterationStat.stat;
 		visit(csT);
 
@@ -312,8 +319,7 @@ public class ExampleICBuilder implements ASTVisitor{
 		for(ASTExpression e: iterationStat.step){
 			visit(e);
 		}
-
-		LabelValue jmp = new LabelValue(String.valueOf(init_pos));
+		LabelValue jmp = new LabelValue(String.valueOf(cond_pos));
 		Quat q  = new Quat("JMP", jmp, null, null, order_id++);
 		quats.add(q);
 
@@ -337,7 +343,25 @@ public class ExampleICBuilder implements ASTVisitor{
 	@Override
 	public void visit(ASTPostfixExpression postfixExpression) throws Exception {
 		// TODO Auto-generated method stub
-		
+		String op = null;
+		ASTNode res = null;
+		ASTNode opnd1 = null;
+
+		op = postfixExpression.op.value;
+
+		if(op.equals("++")||op.equals("--")){
+			visit(postfixExpression.expr);
+			res = new TemporaryValue(++tmpId);
+			opnd1 = map.get(postfixExpression.expr);
+			Quat q = new Quat(op, res, opnd1, null, order_id++);
+			quats.add(q);
+			map.put(postfixExpression, res);
+		}
+
+
+
+
+
 	}
 
 	@Override
@@ -352,6 +376,7 @@ public class ExampleICBuilder implements ASTVisitor{
 		for(ASTExpression e: selectionStat.cond){
 			visit((ASTExpression)e);
 		}
+
 		String true_name = Cond_name(true);
 		order_table.add_unsure(true_name, order_id);
 		LabelValue lvT = new LabelValue(true_name);
@@ -370,6 +395,7 @@ public class ExampleICBuilder implements ASTVisitor{
 		ASTCompoundStatement csT = (ASTCompoundStatement)selectionStat.then;
 		visit(csT);
 
+		//visit false
 		int false_label = order_id;
 		order_table.Back_fill(false_name, false_label);
 		ASTCompoundStatement csF = (ASTCompoundStatement)selectionStat.otherwise;
